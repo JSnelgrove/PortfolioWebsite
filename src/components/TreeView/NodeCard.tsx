@@ -1,0 +1,112 @@
+// src/components/TreeView/NodeCard.tsx
+import type { TreeNode } from "@/data/tree";
+
+type Props = {
+  node: TreeNode;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  isFocused: boolean;
+  mode: "focus" | "overview";
+  parentId: string | null;
+  childIds: string[];
+  onFocus: () => void;
+  onGoParent: () => void;
+  onGoChild: (cid: string) => void;
+  // used only for button labels to match your current behavior
+  findTitle: (id: string) => string | undefined;
+};
+
+export function NodeCard({
+  node, x, y, w, h, isFocused, mode, parentId, childIds, onFocus, onGoParent, onGoChild, findTitle
+}: Props) {
+  return (
+    <foreignObject x={x - w / 2} y={y - h / 2} width={w} height={h}>
+      <div className="h-full w-full relative">
+        <div
+          className={[
+            "h-full w-full rounded-3xl border bg-white shadow-sm",
+            "grid grid-cols-[96px_1fr] grid-rows-[auto_1fr_auto] gap-3 p-4",
+            isFocused ? "ring-2 ring-slate-400" : "",
+          ].join(" ")}
+        >
+          {/* Image */}
+          <div className="row-span-3 h-24 w-24 overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center">
+            {node.imageUrl ? (
+              <img src={node.imageUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-xs text-slate-400">No image</span>
+            )}
+          </div>
+
+          {/* Title */}
+          <div className="truncate text-xl font-semibold leading-tight">
+            {node.title}
+          </div>
+
+          {/* Body */}
+          {isFocused ? (
+            <div className="min-w-0 text-slate-700 leading-snug">
+              {("description" in node && (node as any).description)
+                ? (node as any).description
+                : (node.subtitle ?? "")}
+            </div>
+          ) : (
+            <div className="min-w-0 truncate text-slate-600">
+              {node.subtitle ?? ""}
+            </div>
+          )}
+
+          {/* Nav buttons (exactly as in your file) */}
+          <div className="col-start-2 mt-2 flex flex-wrap items-center gap-2">
+            {mode === "overview" && (
+              <button
+                onClick={onFocus}
+                className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50"
+                title="Focus this node"
+              >
+                Focus
+              </button>
+            )}
+            {parentId && (
+              <button
+                onClick={onGoParent}
+                className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50"
+                title="Go to parent"
+              >
+                Parent
+              </button>
+            )}
+            {childIds.slice(0, 3).map((cid) => (
+              <button
+                key={cid}
+                onClick={() => onGoChild(cid)}
+                className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50"
+                title={`Go to ${cid}`}
+              >
+                {findTitle(cid) ?? "Child"}
+              </button>
+            ))}
+            {node.href && (
+              <a href={node.href} className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50">
+                Open
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Full-card overlay clickable in overview (kept exactly) */}
+        {mode === "overview" && (
+          <button
+            type="button"
+            onClick={onFocus}
+            className="absolute inset-0 rounded-3xl focus:outline-none focus:ring-2 focus:ring-slate-400"
+            style={{ pointerEvents: "auto", zIndex: 10 }}
+            aria-label={`Focus ${node.title}`}
+          />
+        )}
+      </div>
+    </foreignObject>
+  );
+}
