@@ -10,18 +10,17 @@ import {
   X,
   Y,
 } from "@/utils/geom";
-import type { TreeNode } from "@/data/tree";
+import type { TreeNode } from "@/types/tree";
 import type { HierarchyPointNode } from "d3-hierarchy";
 
 export type ViewMode = "focus" | "overview";
 
-// Tiny float guard to prevent re-tweening from tiny numeric differences
 function nearlyEqual(a: number, b: number, eps = 0.01) {
   return Math.abs(a - b) < eps;
 }
 
 export function useTreeCamera({
-  data,
+  rootId,
   nodes,
   width,
   height,
@@ -32,7 +31,7 @@ export function useTreeCamera({
   startMode = "overview",
   startId,
 }: {
-  data: TreeNode;
+  rootId: string; // << was data: TreeNode
   nodes: HierarchyPointNode<TreeNode>[];
   width: number;
   height: number;
@@ -44,12 +43,12 @@ export function useTreeCamera({
   startId?: string;
 }) {
   const [mode, setMode] = useState<ViewMode>(startMode);
-  const [currentId, setCurrentId] = useState<string | null>(startId ?? data.id);
+  const [currentId, setCurrentId] = useState<string | null>(startId ?? rootId);
   const [debugTargetId, setDebugTargetId] = useState<string | null>(null);
 
-  const focusedId = currentId ?? data.id;
+  const focusedId = currentId ?? rootId;
   const focusedNode = nodes.find((n) => n.data.id === focusedId) ?? nodes[0];
-  const rootNode = nodes[0];
+  const rootNode = nodes.find((n) => n.data.id === rootId) ?? nodes[0];
 
   const initialScale =
     startMode === "focus"
@@ -98,9 +97,8 @@ export function useTreeCamera({
     ]);
   }
 
-  // Recenter the camera onto the currently focused node (with drift guard)
   async function recenterToFocused() {
-    const node = nodes.find((n) => n.data.id === (currentId ?? data.id)) ?? nodes[0];
+    const node = nodes.find((n) => n.data.id === (currentId ?? rootId)) ?? nodes[0];
     const s = computeFocusScale(width, height, nodeWidth, nodeHeight);
     const { x, y } = centerAtNodeTransform(
       X(node), Y(node),
@@ -115,7 +113,7 @@ export function useTreeCamera({
       nearlyEqual(y, panRef.current.y) &&
       nearlyEqual(s, scaleRef.current)
     ) {
-      return; // already there — skip tween to prevent slow creep
+      return;
     }
 
     await tweenCam(x, y, s, 0.55);
@@ -124,7 +122,7 @@ export function useTreeCamera({
   async function focusPrezi(targetId: string) {
     setDebugTargetId(targetId);
 
-    const src = nodes.find((n) => n.data.id === (currentId ?? data.id)) ?? nodes[0];
+    const src = nodes.find((n) => n.data.id === (currentId ?? rootId)) ?? nodes[0];
     const dst = nodes.find((n) => n.data.id === targetId) ?? src;
 
     const s0 = scaleRef.current;
@@ -181,12 +179,12 @@ export function useTreeCamera({
     tweenCam,
     focusPrezi,
     zoomOut,
-    recenterToFocused,   // expose helper
+    recenterToFocused,
     mode,
     setMode,
     currentId,
     setCurrentId,
-    focusedId,
+    focusedId: currentId ?? rootId,
     focusedNode,
     debugTargetId,
     setDebugTargetId,

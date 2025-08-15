@@ -1,6 +1,6 @@
 // src/components/TreeView/DebugOverlay.tsx
 import type { HierarchyPointNode } from "d3-hierarchy";
-import type { TreeNode } from "@/data/tree";
+import type { TreeNode } from "@/types/tree";
 import { X, Y } from "@/utils/geom";
 
 export function DebugOverlay({

@@ -1,118 +1,87 @@
-export type NodeType = "hub" | "root" | "experience" | "education" | "project" | "about" | "contact";
+// types/tree.ts
 
-export const CONTENT_TYPES = ["root","experience","education","project","about","contact"] as const;
-export type ContentType = typeof CONTENT_TYPES[number];
+/** All allowed node types for the tree */
+export const CONTENT_TYPES = [
+  "hub",
+  "root",
+  "experience",
+  "education",
+  "project",
+  "about",
+  "contact"
+] as const;
 
-export type BaseNode = {
+export interface RawNode {
   id: string;
   title: string;
-  type: NodeType;
-  parentId?: string;
-  children?: string[];
-};
-
-export type HubNode = BaseNode & {
-  type: "hub";
-  icon?: string;
   subtitle?: string;
-};
-
-export type ExternalLink = { label: string; url: string };
-export type GalleryImage = { src: string; alt?: string; credit?: string };
-
-export type RootNode = BaseNode & {
-  type: "root";
-  summary?: string;
-  location: string;
   description?: string;
-  images?: GalleryImage[];
-  links?: ExternalLink[];
-  meta?: Record<string, string | number>;
-};
+  imageUrl?: string;
+  href?: string;
+  children?: RawNode[];
+}
 
-export type ExperienceNode = BaseNode & {
-  type: "experience";
-  summary?: string;
-  location: string;
-  description?: string;
-  images?: GalleryImage[];
-  links?: ExternalLink[];
-  meta?: Record<string, string | number>;
-};
-
-export type EducationNode = BaseNode & {
-  type: "education";
-  summary?: string;
-  location:string;
-  description?: string;
-  images?: GalleryImage[];
-  links?: ExternalLink[];
-  meta?: Record<string, string | number>;
-};
-
-export type ProjectNode = BaseNode & {
-  type: "project";
-  summary?: string;
-  location:string;
-  description?: string;
-  images?: GalleryImage[];
-  links?: ExternalLink[];
-  meta?: Record<string, string | number>;
-};
-
-export type AboutNode = BaseNode & {
-  type: "about";
-  summary?: string;
-  location:string;
-  description?: string;
-  images?: GalleryImage[];
-  links?: ExternalLink[];
-  meta?: Record<string, string | number>;
-};
-
-export type ContactNode = BaseNode & {
-  type: "contact";
-  summary?: string;
-  location:string;
-  description?: string;
-  images?: GalleryImage[];
-  links?: ExternalLink[];
-  meta?: Record<string, string | number>;
-};
-
-
-export type TreeNode = HubNode | ExperienceNode | EducationNode | RootNode | AboutNode | ContactNode | ProjectNode;
-
-export type TreeData = {
+export interface TreeData {
   nodesById: Record<string, TreeNode>;
   rootId: string;
-};
-
-export function isHub(n?: TreeNode | null): n is HubNode {
-  return !!n && n.type === "hub";
-}
-export function isRoot(n?: TreeNode | null): n is RootNode {
-  return !!n && n.type === "root";
-}
-export function isExperience(n?: TreeNode | null): n is ExperienceNode {
-  return !!n && n.type === "experience";
-}
-export function isProject(n?: TreeNode | null): n is ProjectNode {
-  return !!n && n.type === "project";
-}
-export function isEducation(n?: TreeNode | null): n is EducationNode {
-  return !!n && n.type === "education";
-}
-export function isAbout(n?: TreeNode | null): n is AboutNode {
-  return !!n && n.type === "about";
-}
-export function isContact(n?: TreeNode | null): n is ContactNode {
-  return !!n && n.type === "contact";
 }
 
-export function isContent(n?: TreeNode | null): n is (RootNode|ExperienceNode|EducationNode|ProjectNode|AboutNode|ContactNode) {
-  return !!n && n.type !== "hub";
+export type ContentType = typeof CONTENT_TYPES[number];
+
+/** Common props for all node types */
+interface BaseNode {
+  type: ContentType;
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  imageUrl?: string;
+  href?: string;
+  children?: string[]; // Recursive
 }
 
-/** View mode of the tree camera */
-export type ViewMode = "focus" | "overview";
+/** Hubs are navigation-only, minimal content */
+export interface HubNode extends BaseNode {
+  type: "hub" | "root";
+  description?: string;
+  children: string[];
+}
+
+/** Content-heavy node types */
+export interface ProjectNode extends BaseNode {
+  type: "project";
+  description: string;
+  imageUrl?: string;
+}
+
+export interface ExperienceNode extends BaseNode {
+  type: "experience";
+  description: string;
+  imageUrl?: string;
+}
+
+export interface EducationNode extends BaseNode {
+  type: "education";
+  description: string;
+  imageUrl?: string;
+}
+
+export interface AboutNode extends BaseNode {
+  type: "about";
+  description: string;
+  imageUrl?: string;
+}
+
+export interface ContactNode extends BaseNode {
+  type: "contact";
+  description?: string;
+}
+
+/** The full tree node union */
+export type TreeNode =
+  | HubNode
+  | ProjectNode
+  | ExperienceNode
+  | EducationNode
+  | AboutNode
+  | ContactNode;

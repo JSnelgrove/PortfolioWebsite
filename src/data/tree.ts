@@ -1,16 +1,6 @@
-// Pure data, no JSX
-export type TreeNode = {
-  icon?: any;
-  id: string;
-  title: string;
-  description?: string;   // <-- add
-  subtitle?: string;
-  imageUrl?: string;          // headshot, project thumbnail, etc
-  href?: string;              // external link (GitHub, live demo...)
-  children?: TreeNode[];
-};
+import type { RawNode } from "@/types/tree";
 
-export const TREE_DATA: TreeNode = {
+export const TREE_DATA: RawNode = {
   id: "root",
   title: "Jack Snelgrove",
   subtitle: "Software Developer",

@@ -1,5 +1,5 @@
 // src/components/TreeView/NodeCard.tsx
-import type { TreeNode } from "@/data/tree";
+import type { TreeNode } from "@/types/tree";
 
 type Props = {
   node: TreeNode;
@@ -14,13 +14,27 @@ type Props = {
   onFocus: () => void;
   onGoParent: () => void;
   onGoChild: (cid: string) => void;
-  // used only for button labels to match your current behavior
   findTitle: (id: string) => string | undefined;
 };
 
 export function NodeCard({
-  node, x, y, w, h, isFocused, mode, parentId, childIds, onFocus, onGoParent, onGoChild, findTitle
+  node,
+  x,
+  y,
+  w,
+  h,
+  isFocused,
+  mode,
+  parentId,
+  childIds,
+  onFocus,
+  onGoParent,
+  onGoChild,
+  findTitle,
 }: Props) {
+  const img = node.imageUrl;
+  const openLink = node.href ? { label: "Open", url: node.href } : undefined;
+
   return (
     <foreignObject x={x - w / 2} y={y - h / 2} width={w} height={h}>
       <div className="h-full w-full relative">
@@ -33,8 +47,8 @@ export function NodeCard({
         >
           {/* Image */}
           <div className="row-span-3 h-24 w-24 overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center">
-            {node.imageUrl ? (
-              <img src={node.imageUrl} alt="" className="h-full w-full object-cover" />
+            {img ? (
+              <img src={img} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="text-xs text-slate-400">No image</span>
             )}
@@ -48,9 +62,7 @@ export function NodeCard({
           {/* Body */}
           {isFocused ? (
             <div className="min-w-0 text-slate-700 leading-snug">
-              {("description" in node && (node as any).description)
-                ? (node as any).description
-                : (node.subtitle ?? "")}
+              {node.description ?? ""}
             </div>
           ) : (
             <div className="min-w-0 truncate text-slate-600">
@@ -58,7 +70,7 @@ export function NodeCard({
             </div>
           )}
 
-          {/* Nav buttons (exactly as in your file) */}
+          {/* Nav buttons */}
           <div className="col-start-2 mt-2 flex flex-wrap items-center gap-2">
             {mode === "overview" && (
               <button
@@ -88,15 +100,20 @@ export function NodeCard({
                 {findTitle(cid) ?? "Child"}
               </button>
             ))}
-            {node.href && (
-              <a href={node.href} className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50">
-                Open
+            {openLink && (
+              <a
+                href={openLink.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50"
+              >
+                {openLink.label}
               </a>
             )}
           </div>
         </div>
 
-        {/* Full-card overlay clickable in overview (kept exactly) */}
+        {/* Full-card overlay clickable in overview */}
         {mode === "overview" && (
           <button
             type="button"

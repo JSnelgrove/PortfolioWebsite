@@ -1,7 +1,7 @@
 // src/components/TreeView/TreeView.tsx
 import { useLayoutEffect } from "react";
 import type { HierarchyPointLink } from "d3-hierarchy";
-import type { TreeNode } from "@/data/tree";
+import type { TreeData, TreeNode } from "@/types/tree";
 import { useTreeLayout } from "@/hooks/useTreeLayout";
 import { useTreeCamera, type ViewMode } from "@/hooks/useTreeCamera";
 import { X, Y, worldAtScreenCenter } from "@/utils/geom";
@@ -9,13 +9,13 @@ import { DebugOverlay } from "./DebugOverlay";
 import { NodeCard } from "./NodeCard";
 
 /* ============================== DEBUG TOGGLES ============================== */
-const DEBUG_CROSSHAIRS   = true;   // screen center, focused node, pending target, world@screenCenter
-const DEBUG_TREE_BOUNDS  = true;   // blue dashed rect around tree extents
-const DEBUG_NODE_CENTERS = false;  // dots at each node center
-const DEBUG_LABELS       = true;   // labels near debug markers
+const DEBUG_CROSSHAIRS   = true;
+const DEBUG_TREE_BOUNDS  = true;
+const DEBUG_NODE_CENTERS = false;
+const DEBUG_LABELS       = true;
 
 type Props = {
-  data: TreeNode;
+  tree: TreeData;            // << flat model
   nodeWidth?: number;
   nodeHeight?: number;
   nodeGapX?: number;
@@ -24,13 +24,12 @@ type Props = {
   startId?: string;
 };
 
-// tiny guard for overview pose check
 function nearlyEqual(a: number, b: number, eps = 0.01) {
   return Math.abs(a - b) < eps;
 }
 
 export default function TreeView({
-  data,
+  tree,
   nodeWidth = 360,
   nodeHeight = 180,
   nodeGapX = 64,
@@ -38,28 +37,36 @@ export default function TreeView({
   startMode = "overview",
   startId,
 }: Props) {
-  // Layout
+  if (!tree) {
+    return <div className="p-4 text-slate-500">Loading tree...</div>;
+  }
+
   const {
     nodes, links, width, height,
     translateX, translateY,
     minX, maxX, minY, maxY,
-  } = useTreeLayout({ data, nodeWidth, nodeHeight, nodeGapX, nodeGapY });
+  } = useTreeLayout({ tree, nodeWidth, nodeHeight, nodeGapX, nodeGapY });
 
-  // Camera
   const {
     cam, tweenCam, focusPrezi, zoomOut, recenterToFocused,
     mode, setMode, currentId, setCurrentId,
-    focusedId, focusedNode,
+    focusedId,
     debugTargetId, setDebugTargetId,
     panRef, scaleRef,
   } = useTreeCamera({
-    data, nodes, width, height,
-    translateX, translateY,
-    nodeWidth, nodeHeight,
-    startMode, startId,
+    rootId: tree.rootId,
+    nodes,
+    width,
+    height,
+    translateX,
+    translateY,
+    nodeWidth,
+    nodeHeight,
+    startMode,
+    startId,
   });
 
-  // Recenter when mode/focus changes — uses shared helper (prevents drift)
+  // Recenter when mode/focus changes
   useLayoutEffect(() => {
     if (mode === "overview") {
       setDebugTargetId(null);
@@ -76,13 +83,13 @@ export default function TreeView({
     void recenterToFocused();
   }, [
     mode,
-    currentId,            // which node is focused
-    width, height,        // canvas size affects center math
+    currentId,
+    width, height,
     translateX, translateY,
     nodeWidth, nodeHeight,
   ]);
 
-  // World@screenCenter (black crosshair), convert to raw world P for plotting
+  // World@screenCenter (black crosshair)
   const Zc = worldAtScreenCenter(panRef.current, scaleRef.current, width, height);
   const worldCenterP = { x: Zc.x - translateX, y: Zc.y - translateY };
 
@@ -109,9 +116,9 @@ export default function TreeView({
             >
               Zoom out to full tree
             </button>
-            {(currentId ?? data.id) !== data.id && (
+            {(currentId ?? tree.rootId) !== tree.rootId && (
               <button
-                onClick={() => focusPrezi(data.id)}
+                onClick={() => focusPrezi(tree.rootId)}
                 className="rounded-lg border px-3 py-1.5 text-sm hover:bg-slate-50"
               >
                 Back to root
@@ -131,7 +138,7 @@ export default function TreeView({
           preserveAspectRatio="xMidYMid meet"
           className="w-full h-[75vh]"
         >
-          {/* Fixed screen-center crosshair (not camera-transformed) */}
+          {/* Fixed screen-center crosshair */}
           {DEBUG_CROSSHAIRS && (
             <g>
               <line
@@ -163,7 +170,7 @@ export default function TreeView({
             </g>
           )}
 
-          {/* CAMERA via SVG attributes: translate(pan) → scale(s) → translate(static) */}
+          {/* CAMERA: translate(pan) -> scale(s) -> translate(static) */}
           <g transform={`translate(${cam.x} ${cam.y})`}>
             <g transform={`scale(${cam.s})`}>
               <g transform={`translate(${translateX} ${translateY})`}>
