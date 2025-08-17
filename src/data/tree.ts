@@ -4,7 +4,7 @@ export const TREE_DATA: RawNode = {
   id: "root",
   title: "Jack Snelgrove",
   subtitle: "Software Developer",
-  imageUrl: "/assets/jack.jpg",
+  imageUrl: "src/assets/profile.jpeg",
   children: [
     {
       id: "projects",
@@ -30,7 +30,7 @@ export const TREE_DATA: RawNode = {
       id: "experience",
       title: "Experience",
       children: [
-        { id: "exp-1", title: "DND", subtitle: "Co‑op" },
+        { id: "exp-1", title: "DND", subtitle: "Co‑op", description:"This is the best job ive ever had" },
         { id: "exp-2", title: "TrueContext", subtitle: "Co‑op" }
       ]
     },

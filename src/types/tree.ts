@@ -39,10 +39,17 @@ interface BaseNode {
   href?: string;
   children?: string[]; // Recursive
 }
+export interface RootNode extends BaseNode {
+  type: "root";
+  description?: string; // optional, could show tagline
+  children: string[];   // must have children
+  // ✅ no imageUrl here
+}
+
 
 /** Hubs are navigation-only, minimal content */
 export interface HubNode extends BaseNode {
-  type: "hub" | "root";
+  type: "hub" ;
   description?: string;
   children: string[];
 }
@@ -79,6 +86,7 @@ export interface ContactNode extends BaseNode {
 
 /** The full tree node union */
 export type TreeNode =
+  | RootNode
   | HubNode
   | ProjectNode
   | ExperienceNode

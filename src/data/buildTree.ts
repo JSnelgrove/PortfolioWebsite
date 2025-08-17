@@ -3,6 +3,7 @@ import type {
   TreeNode,
   ContentType,
   HubNode,
+  RootNode,
   ProjectNode,
   ExperienceNode,
   EducationNode,
@@ -21,7 +22,8 @@ const defaultResolver: TypeResolver = (node, parentId) => {
   if (parentId === "education") return "education";
   if (node.id === "about") return "about";
   if (node.id === "contact") return "contact";
-  return node.children?.length ? "hub" : "about";
+  if (node.children?.length) return "hub"; 
+  return "about";
 };
 
 export function buildTreeData(
@@ -38,6 +40,14 @@ export function buildTreeData(
 
     switch (type) {
       case "hub":
+        typed = {
+          type,
+          id: node.id,
+          title: node.title,
+          children: childrenIds,
+        } as HubNode;
+      break;
+        
       case "root":
         typed = {
           type,
@@ -48,7 +58,7 @@ export function buildTreeData(
           imageUrl: node.imageUrl,
           href: node.href,
           children: childrenIds
-        } as HubNode; // covers both hub & root
+        } as RootNode; // covers both hub & root
         break;
 
       case "project":
@@ -112,7 +122,7 @@ export function buildTreeData(
           description: node.description,
           href: node.href,
           children: childrenIds
-        } as ContactNode;
+        } as ContactNode; 
         break;
 
       default:

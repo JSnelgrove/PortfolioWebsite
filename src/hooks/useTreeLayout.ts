@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { hierarchy, tree as d3tree } from "d3-hierarchy";
 import type { TreeData, TreeNode } from "@/types/tree";
-import { X, Y } from "@/utils/geom";
+import { X, Y } from "@/utils/geometry";
 
 export function useTreeLayout({
   tree,

@@ -5,19 +5,16 @@ import {
   computeFocusScale,
   centerAtNodeTransform,
   worldAtScreenCenter,
+  nearlyEqual,
   zoomAbout,
   clamp,
   X,
   Y,
-} from "@/utils/geom";
+} from "@/utils/geometry";
 import type { TreeNode } from "@/types/tree";
 import type { HierarchyPointNode } from "d3-hierarchy";
 
 export type ViewMode = "focus" | "overview";
-
-function nearlyEqual(a: number, b: number, eps = 0.01) {
-  return Math.abs(a - b) < eps;
-}
 
 export function useTreeCamera({
   rootId,
@@ -31,7 +28,7 @@ export function useTreeCamera({
   startMode = "overview",
   startId,
 }: {
-  rootId: string; // << was data: TreeNode
+  rootId: string; 
   nodes: HierarchyPointNode<TreeNode>[];
   width: number;
   height: number;

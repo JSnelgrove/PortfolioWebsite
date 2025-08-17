@@ -1,4 +1,4 @@
-// src/utils/geom.ts
+
 
 /** Orientation helpers — keep your current convention */
 export const X = (n: { x: number; y: number }) => n.x;
@@ -15,7 +15,7 @@ export function computeFocusScale(
   canvasH: number,
   nodeW: number,
   nodeH: number,
-  fill = 0.55 // matches your FOCUS_FILL
+  fill = 1// matches your FOCUS_FILL
 ) {
   return Math.min((fill * canvasW) / nodeW, (fill * canvasH) / nodeH);
 }
@@ -41,7 +41,7 @@ export function centerAtNodeTransform(
   };
 }
 
-/** World coords (translate+P) under the fixed screen center */
+// Returns the world-space coordinate that lies under the screen center,after applying the current pan and zoom transforms
 export function worldAtScreenCenter(
   panXY: { x: number; y: number },
   scale: number,
@@ -53,8 +53,8 @@ export function worldAtScreenCenter(
     y: (canvasH / 2 - panXY.y) / scale,
   };
 }
-
-/** Zoom about a given world point Z (in translate+P coords) */
+// Computes new pan offsets so that world point Z stays fixed on screen
+// when zooming from fromScale → toScale
 export function zoomAbout(
   panXY: { x: number; y: number },
   fromScale: number,
@@ -66,4 +66,8 @@ export function zoomAbout(
     y: panXY.y + (fromScale - toScale) * Z.y,
     scale: toScale,
   };
+}
+
+export function nearlyEqual(a: number, b: number, epsilon = 1e-6) {
+  return Math.abs(a - b) < epsilon;
 }

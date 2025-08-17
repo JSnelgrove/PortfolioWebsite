@@ -4,18 +4,19 @@ import type { HierarchyPointLink } from "d3-hierarchy";
 import type { TreeData, TreeNode } from "@/types/tree";
 import { useTreeLayout } from "@/hooks/useTreeLayout";
 import { useTreeCamera, type ViewMode } from "@/hooks/useTreeCamera";
-import { X, Y, worldAtScreenCenter } from "@/utils/geom";
+import { X, Y, worldAtScreenCenter, nearlyEqual } from "@/utils/geometry";
 import { DebugOverlay } from "./DebugOverlay";
-import { NodeCard } from "./NodeCard";
+import { NodeCard } from "./nodes/NodeCard";
+import { findTitle, getChildIds, getNodeSize } from "@/utils/nodes";
 
 /* ============================== DEBUG TOGGLES ============================== */
-const DEBUG_CROSSHAIRS   = true;
-const DEBUG_TREE_BOUNDS  = true;
+const DEBUG_CROSSHAIRS   = false;
+const DEBUG_TREE_BOUNDS  = false;
 const DEBUG_NODE_CENTERS = false;
-const DEBUG_LABELS       = true;
+const DEBUG_LABELS       = false;
 
 type Props = {
-  tree: TreeData;            // << flat model
+  tree: TreeData;
   nodeWidth?: number;
   nodeHeight?: number;
   nodeGapX?: number;
@@ -24,17 +25,13 @@ type Props = {
   startId?: string;
 };
 
-function nearlyEqual(a: number, b: number, eps = 0.01) {
-  return Math.abs(a - b) < eps;
-}
-
 export default function TreeView({
   tree,
   nodeWidth = 360,
-  nodeHeight = 180,
+  nodeHeight = 500,
   nodeGapX = 64,
   nodeGapY = 140,
-  startMode = "overview",
+  startMode = "focus",
   startId,
 }: Props) {
   if (!tree) {
@@ -93,9 +90,6 @@ export default function TreeView({
   const Zc = worldAtScreenCenter(panRef.current, scaleRef.current, width, height);
   const worldCenterP = { x: Zc.x - translateX, y: Zc.y - translateY };
 
-  // quick title lookup for child button labels
-  const findTitle = (id: string) => nodes.find((n) => n.data.id === id)?.data.title;
-
   const debugTarget = debugTargetId
     ? nodes.find((n) => n.data.id === debugTargetId) ?? null
     : null;
@@ -136,7 +130,7 @@ export default function TreeView({
         <svg
           viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="xMidYMid meet"
-          className="w-full h-[75vh]"
+          className="w-full h-[89vh]"
         >
           {/* Fixed screen-center crosshair */}
           {DEBUG_CROSSHAIRS && (
@@ -174,14 +168,19 @@ export default function TreeView({
           <g transform={`translate(${cam.x} ${cam.y})`}>
             <g transform={`scale(${cam.s})`}>
               <g transform={`translate(${translateX} ${translateY})`}>
+
                 {/* Links */}
-                <g className="pointer-events-none stroke-slate-300">
+                <g className="stroke-slate-300 pointer-events-none">
                   {links.map((l: HierarchyPointLink<TreeNode>, i: number) => {
+                    const { h: sourceH } = getNodeSize(l.source.data);
+                    const { h: targetH } = getNodeSize(l.target.data);
+
                     const x1 = X(l.source);
-                    const y1 = Y(l.source) + nodeHeight / 2;
+                    const y1 = Y(l.source) + sourceH / 2;
                     const x2 = X(l.target);
-                    const y2 = Y(l.target) - nodeHeight / 2;
+                    const y2 = Y(l.target) - targetH / 2;
                     const mx = (x1 + x2) / 2;
+
                     return (
                       <path
                         key={i}
@@ -194,26 +193,77 @@ export default function TreeView({
                 </g>
 
                 {/* Nodes */}
-                {nodes.map((n) => (
-                  <NodeCard
-                    key={n.data.id}
-                    node={n.data}
-                    x={X(n)}
-                    y={Y(n)}
-                    w={nodeWidth}
-                    h={nodeHeight}
-                    isFocused={mode === "focus" && n.data.id === focusedId}
-                    mode={mode}
-                    parentId={n.parent?.data.id ?? null}
-                    childIds={n.children?.map((c) => c.data.id) ?? []}
-                    onFocus={() => focusPrezi(n.data.id)}
-                    onGoParent={() => n.parent?.data.id && focusPrezi(n.parent.data.id)}
-                    onGoChild={(cid) => focusPrezi(cid)}
-                    findTitle={findTitle}
-                  />
-                ))}
+                {nodes.map((n) => {
+                  const { w, h } = getNodeSize(n.data);
+                  const childIds = getChildIds(n.data);
+                  const parentId = n.parent?.data.id ?? null;
 
-                {/* Debug overlays inside world space */}
+                  return (
+                    <g key={n.data.id}>
+                      {/* Parent button above */}
+                      {parentId && (
+                        <foreignObject
+                          x={X(n) - 80}
+                          y={Y(n) - h / 2 - 35}
+                          width={150}
+                          height={30}
+                          style={{ pointerEvents: "auto" }}
+                        >
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => focusPrezi(parentId)}
+                              className="rounded-md border bg-white px-2 py-1 text-xs shadow hover:bg-slate-50"
+                            >
+                              {findTitle(nodes, parentId) ?? "Parent"}
+                            </button>
+                          </div>
+                        </foreignObject>
+                      )}
+
+                      {/* The Node itself */}
+                      <NodeCard
+                        node={n.data}
+                        x={X(n)}
+                        y={Y(n)}
+                        w={w}
+                        h={h}
+                        isFocused={mode === "focus" && n.data.id === focusedId}
+                        mode={mode}
+                        parentId={parentId}
+                        childIds={childIds}
+                        onFocus={() => focusPrezi(n.data.id)}
+                        onGoParent={() => parentId && focusPrezi(parentId)}
+                        onGoChild={(cid) => focusPrezi(cid)}
+                        findTitle={(id) => findTitle(nodes, id)}
+                      />
+
+                      {/* Child buttons below */}
+                      {childIds.length > 0 && (
+                        <foreignObject
+                          x={X(n) - (childIds.length * 45)}
+                          y={Y(n) + h / 2 + 10}
+                          width={childIds.length * 90}
+                          height={40}
+                          style={{ pointerEvents: "auto" }}
+                        >
+                          <div className="flex justify-center gap-2">
+                            {childIds.map((cid) => (
+                              <button
+                                key={cid}
+                                onClick={() => focusPrezi(cid)}
+                                className="rounded-md border bg-white px-2 py-1 text-xs shadow hover:bg-slate-50"
+                              >
+                                {findTitle(nodes, cid) ?? "Child"}
+                              </button>
+                            ))}
+                          </div>
+                        </foreignObject>
+                      )}
+                    </g>
+                  );
+                })}
+
+                {/* Debug overlays */}
                 <DebugOverlay
                   flags={{ DEBUG_CROSSHAIRS, DEBUG_TREE_BOUNDS, DEBUG_NODE_CENTERS, DEBUG_LABELS }}
                   nodes={nodes}
