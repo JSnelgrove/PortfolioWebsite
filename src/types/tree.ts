@@ -1,4 +1,18 @@
 // types/tree.ts
+export type Link ={
+  icon: string;
+  url: string;
+  label: string;
+}
+
+export type Reference ={
+  name: string;
+  jobTitle: string;
+  jpeg: string;
+  date:Date;
+  email:string;
+}
+
 
 /** All allowed node types for the tree */
 export const CONTENT_TYPES = [
@@ -17,7 +31,11 @@ export interface RawNode {
   subtitle?: string;
   description?: string;
   imageUrl?: string;
-  href?: string;
+  jobTitle?: string;
+  startDate?: Date;
+  endDate?: Date;
+  references?: Reference[];
+  links? : Link[];
   children?: RawNode[];
 }
 
@@ -36,14 +54,12 @@ interface BaseNode {
   subtitle?: string;
   description?: string;
   imageUrl?: string;
-  href?: string;
   children?: string[]; // Recursive
 }
 export interface RootNode extends BaseNode {
   type: "root";
-  description?: string; // optional, could show tagline
-  children: string[];   // must have children
-  // ✅ no imageUrl here
+  description?: string; 
+  children: string[];  
 }
 
 
@@ -57,6 +73,7 @@ export interface HubNode extends BaseNode {
 /** Content-heavy node types */
 export interface ProjectNode extends BaseNode {
   type: "project";
+  links?: Link[];
   description: string;
   imageUrl?: string;
 }
@@ -64,12 +81,17 @@ export interface ProjectNode extends BaseNode {
 export interface ExperienceNode extends BaseNode {
   type: "experience";
   description: string;
+  startDate: Date; 
+  endDate: Date;
+  references?: Reference[];
   imageUrl?: string;
 }
 
 export interface EducationNode extends BaseNode {
   type: "education";
   description: string;
+  startDate: Date; 
+  endDate: Date;
   imageUrl?: string;
 }
 
@@ -81,6 +103,7 @@ export interface AboutNode extends BaseNode {
 
 export interface ContactNode extends BaseNode {
   type: "contact";
+  links? : Link[];
   description?: string;
 }
 

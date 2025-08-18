@@ -28,9 +28,9 @@ type Props = {
 export default function TreeView({
   tree,
   nodeWidth = 360,
-  nodeHeight = 500,
-  nodeGapX = 64,
-  nodeGapY = 140,
+  nodeHeight = 300,
+  nodeGapX = 40,
+  nodeGapY = 1,
   startMode = "focus",
   startId,
 }: Props) {

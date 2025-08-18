@@ -2,21 +2,15 @@ import type { BaseCardProps } from "./NodeCard";
 
 export type ContentCardProps = Pick<
   BaseCardProps,
-  "node" | "isFocused" | "mode" | "parentId" | "childIds" | "onGoParent" | "onGoChild" | "findTitle"
+  "node" | "isFocused"
 >;
 
 export function ContentCard({
   node,
   isFocused,
-  mode,
-  parentId,
-  childIds,
-  onGoParent,
-  onGoChild,
-  findTitle,
+
 }: ContentCardProps) {
   const img = node.imageUrl;
-  const openLink = node.href ? { label: "Open", url: node.href } : undefined;
 
   return (
 <div
@@ -43,34 +37,19 @@ export function ContentCard({
 
     {/* Body */}
     {isFocused && (
-    <div className="min-w-0 text-slate-700 leading-snug">
-        {node.subtitle && (
-        <div className="text-base font-medium mb-1">
-            {node.subtitle}
+        <div className="min-w-0 text-slate-700 leading-snug">
+            {node.subtitle && (
+            <div className="text-base font-medium mb-1">
+                {node.subtitle}
+            </div>
+            )}
+            {node.description && (
+            <div className="text-sm text-slate-600">
+                {node.description}
+            </div>
+            )}
         </div>
-        )}
-        {node.description && (
-        <div className="text-sm text-slate-600">
-            {node.description}
-        </div>
-        )}
-    </div>
-        )}
-
-      {/* Nav buttons */}
-      <div className="col-start-2 mt-2 flex flex-wrap items-center gap-2">
-
-        {openLink && (
-          <a
-            href={openLink.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-xl border px-3 py-1.5 text-sm hover:bg-slate-50"
-          >
-            {openLink.label}
-          </a>
-        )}
-      </div>
+    )}
     </div>
   );
 }

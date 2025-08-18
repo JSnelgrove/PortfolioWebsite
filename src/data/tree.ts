@@ -15,14 +15,12 @@ export const TREE_DATA: RawNode = {
           title: "SEM App",
           subtitle: "Power Apps + Flow",
           imageUrl: "/assets/sem-thumb.png",
-          href: "/projects/sem"
         },
         {
           id: "proj-2",
           title: "Portfolio",
           subtitle: "React + Tailwind",
           imageUrl: "/assets/portfolio-thumb.png",
-          href: "/projects/portfolio"
         }
       ]
     },
@@ -37,7 +35,10 @@ export const TREE_DATA: RawNode = {
     {
       id: "contact",
       title: "Contact",
-      href: "/contact"
+      links:[
+        {url:"https://github.com/JSnelgrove", label: "GitHub", icon:"/src/assets/GitHub-Logo.png"}, 
+        {url:"https://www.linkedin.com/in/jack-s-19a982191/", label: "LinkedIn", icon:"/src/assets/LinkedIn_icon.png"}
+      ]
     }
   ]
 };

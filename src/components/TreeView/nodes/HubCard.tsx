@@ -2,18 +2,12 @@ import type { BaseCardProps } from "./NodeCard";
 
 export type HubCardProps = Pick<
   BaseCardProps,
-  "node" | "isFocused" | "mode" | "parentId" | "childIds" | "onGoParent" | "onGoChild" | "findTitle"
+  "node" | "isFocused"
 >;
 
 export function HubCard({
   node,
   isFocused,
-  mode,
-  parentId,
-  childIds,
-  onGoParent,
-  onGoChild,
-  findTitle,
 }: HubCardProps) {
   return (
     <div

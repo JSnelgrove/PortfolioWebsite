@@ -33,7 +33,7 @@ export function getNodeSize(node: TreeNode) {
         height = 200;
         break;
       case "hub":
-        height = 140;
+        height = 60;
         break;
       case "project":
       case "experience":

@@ -2,10 +2,10 @@ import type { BaseCardProps } from "./NodeCard";
 
 export type RootCardProps = Pick<
   BaseCardProps,
-  "node" | "isFocused" | "mode" | "childIds"| "onGoChild" | "findTitle"
+  "node" | "isFocused"
 >;
 
-export function RootCard({ node, isFocused, mode,childIds, onGoChild, findTitle }: RootCardProps) {
+export function RootCard({ node, isFocused }: RootCardProps) {
 const img = node.imageUrl;
   return (
     <div

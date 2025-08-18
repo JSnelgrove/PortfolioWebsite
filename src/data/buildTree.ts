@@ -108,7 +108,6 @@ export function buildTreeData(
           subtitle: node.subtitle,
           description: node.description ?? "",
           imageUrl: node.imageUrl,
-          href: node.href,
           children: childrenIds
         } as AboutNode;
         break;
@@ -119,8 +118,8 @@ export function buildTreeData(
           id: node.id,
           title: node.title,
           subtitle: node.subtitle,
+          links: node.links ?? [], 
           description: node.description,
-          href: node.href,
           children: childrenIds
         } as ContactNode; 
         break;
